@@ -45,7 +45,7 @@ TOKEN:
   | < CLASS: "class" >
   | < PUBLIC: "public" >
   | < MAIN: "main" >
-  | < IDENTIFIER: (< LETTER >) (< LETTER >| < DIGIT >)* >
+  | < INDETIFIER: (< LETTER >) (< LETTER >| < DIGIT >)* >
   | < #DIGIT: ["0" - "9"] >
   | < #LETTER: ["a" - "z"] | ["A" - "Z"] >
   | < INTEGER_LITERAL: (< DIGIT >)+ >
