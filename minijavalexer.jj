@@ -67,11 +67,112 @@ SKIP:
 // The following is a simple grammar that will allow you
 // to test the generated lexer.
 
+//Grammar available on: http://www.cambridge.org/resources/052182060X/MCIIJ2e/grammar.htm
+
+void Prog() :
+{}
+{ MainClass() (ClassDeclaration())* < EOF > }
+
+void MainClass() :
+{}
+{ < CLASS > Identifier() < LBRACE > < PUBLIC > < STATIC > < VOID > < MAIN > < LPAREN > < STRING > < LCOUCH > < RCOUCH > Identifier() < RPAREN > < LBRACE > Stm() < RBRACE > < RBRACE > }
+
+void ClassDeclaration() :
+{}
+{ < CLASS > Identifier() (< EXTENDS > Identifier())? < LBRACE > (VarDeclaration())* (MethodDeclaration())* < RBRACE > }
+
+void VarDeclaration() :
+{}
+{ Type() Identifier() < SEMICOLON > }
+
+void MethodDeclaration() :
+{}
+{ < PUBLIC > Type() Identifier() < LPAREN > (Type() Identifier() (< VIRG > Type() Identifier())*)? < LBRACE > (VarDeclaration())* (Stm())* < RETURN > Exp() < SEMICOLON > }
+
+void Type() :
+{}
+{ < INTEGER > < LCOUCH > < RCOUCH >
+  | < BOOLEAN >
+  | < INTEGER >
+  | Identifier() }
+  
+void Stm() :
+{}
+{ < LBRACE > (Stm())* < RBRACE >
+  | < IF > < LPAREN > Exp() < RPAREN > Stm() < ELSE > Stm()
+  | < WHILE > < LPAREN > Exp() < RPAREN > Stm()
+  | < PRINT > < LPAREN > Exp() < RPAREN > < SEMICOLON >
+  | Identifier() < EQ > Exp() < SEMICOLON >
+  | Identifier() < LCOUCH > Exp() < RCOUCH > < EQ > Exp() < SEMICOLON > }
+
+void Exp() :
+{}
+{ ExpObj1() ExpFin() }
+
+void ExpObj1() :
+{}
+{ Term() (Op() ExpObj1())? }
+
+void Term() :
+{}
+{ < INTEGER_LITERAL >
+  | < TRUE >
+  | < FALSE >
+  | Identifier()
+  | < THIS >
+  | < NEW > < INTEGER > < LCOUCH > Exp() < RCOUCH >
+  | < NEW > Identifier() < LPAREN > < RPAREN >
+  | < NOT > Exp()
+  | < LPAREN > Exp() < RPAREN >}
+  
+void Op() :
+{}
+{
+  < AND >
+  | < LESS >
+  | < PLUS >
+  | < MINUS >
+  | < STAR > }
+
+void ExpFin() :
+{}
+{
+  (< AND >|< LESS >|< PLUS >|< MINUS >|< STAR >) ExpObj1()
+  | < LCOUCH > Exp() < RCOUCH >
+  | < DOT > < LENGTH >
+  | < DOT > Identifier() < LPAREN > (Exp() (< VIRG > Exp())*)? < RPAREN >}
+
+/*void Exp() :
+{}
+{ Exp() (< AND >|< LESS >|< PLUS >|< MINUS >|< STAR >) Exp()
+  | Exp() < LCOUCH > Exp() < RCOUCH >
+  | Exp() < DOT > < LENGTH >
+  | Exp() < DOT > Identifier() < LPAREN > (Exp() (< VIRG > Exp())*)? < RPAREN >
+  | < INTEGER_LITERAL >
+  | < TRUE >
+  | < FALSE >
+  | Identifier()
+  | < THIS >
+  | < NEW > < INTEGER > < LCOUCH > Exp() < RCOUCH >
+  | < NEW > Identifier() < LPAREN > < RPAREN >
+  | < NOT > Exp()
+  | < LPAREN > Exp() < RPAREN >}*/
+  
+void Identifier() :
+{}
+{ < IDENTIFIER > }
 
 void Goal() :
 {}
 {
   ( MiniJavaToken() )*
+  <EOF>
+}
+
+void Start() :
+{}
+{
+  ( Prog() )*
   <EOF>
 }
 

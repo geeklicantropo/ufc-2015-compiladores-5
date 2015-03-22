@@ -6,7 +6,7 @@ public class Main {
          System.out.println("Sintatic analysis successfull");
       }
       catch (ParseException e) {
-         System.out.println("Error : \n"+ e.toString());
+         System.out.println("Lexer Error : \n"+ e.toString());
       }
    }
 }
