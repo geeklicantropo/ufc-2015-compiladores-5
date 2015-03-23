@@ -47,12 +47,12 @@ TOKEN:
   | < MAIN: "main" >
   | < IDENTIFIER: (< LETTER >) (< LETTER >| < DIGIT >)* >
   | < #DIGIT: ["0" - "9"] >
-  | < #LETTER: ["a" - "z"] | ["A" - "Z"] >
+  | < #LETTER: ["a" - "z"] | ["A" - "Z"] | "_" >
   | < INTEGER_LITERAL: (< DIGIT >)+ >
 }
 SKIP:
 {
-	< "//" (["a" - "z","A" - "Z","0" - "9"])* >
+	< "//" (" ")* (["a" - "z","A" - "Z","0" - "9"," ","_",";"])* "\n" >
 	| < "/*" (["a" - "z","A" - "Z","0" - "9"])* "*/" >
 	| < " " >
 	| < "\n" >
@@ -87,13 +87,13 @@ void VarDeclaration() :
 
 void MethodDeclaration() :
 {}
-{ < PUBLIC > Type() Identifier() < LPAREN > (Type() Identifier() (< VIRG > Type() Identifier())*)? < LBRACE > (VarDeclaration())* (Stm())* < RETURN > Exp() < SEMICOLON > }
+{ < PUBLIC > Type() Identifier() < LPAREN > (Type() Identifier() (< VIRG > Type() Identifier())*)? < RPAREN > < LBRACE > (LOOKAHEAD(2) VarDeclaration())* (Stm())* < RETURN > Exp() < SEMICOLON > < RBRACE > }
 
 void Type() :
 {}
-{ < INTEGER > < LCOUCH > < RCOUCH >
+{ LOOKAHEAD(2) < INTEGER > < LCOUCH > < RCOUCH >
   | < BOOLEAN >
-  | < INTEGER >
+  | LOOKAHEAD(2) < INTEGER >
   | Identifier() }
   
 void Stm() :
@@ -102,16 +102,16 @@ void Stm() :
   | < IF > < LPAREN > Exp() < RPAREN > Stm() < ELSE > Stm()
   | < WHILE > < LPAREN > Exp() < RPAREN > Stm()
   | < PRINT > < LPAREN > Exp() < RPAREN > < SEMICOLON >
-  | Identifier() < EQ > Exp() < SEMICOLON >
+  | LOOKAHEAD(2) Identifier() < EQ > Exp() < SEMICOLON >
   | Identifier() < LCOUCH > Exp() < RCOUCH > < EQ > Exp() < SEMICOLON > }
 
 void Exp() :
 {}
-{ ExpObj1() ExpFin() }
+{ ExpObj1() (LOOKAHEAD(2) ExpFin())? }
 
 void ExpObj1() :
 {}
-{ Term() (Op() ExpObj1())? }
+{ Term() (LOOKAHEAD(2) Op() ExpObj1())? }
 
 void Term() :
 {}
@@ -120,8 +120,8 @@ void Term() :
   | < FALSE >
   | Identifier()
   | < THIS >
-  | < NEW > < INTEGER > < LCOUCH > Exp() < RCOUCH >
-  | < NEW > Identifier() < LPAREN > < RPAREN >
+  | LOOKAHEAD(2) < NEW > < INTEGER > < LCOUCH > Exp() < RCOUCH >
+  | LOOKAHEAD(2) < NEW > Identifier() < LPAREN > < RPAREN >
   | < NOT > Exp()
   | < LPAREN > Exp() < RPAREN >}
   
@@ -139,8 +139,8 @@ void ExpFin() :
 {
   (< AND >|< LESS >|< PLUS >|< MINUS >|< STAR >) ExpObj1()
   | < LCOUCH > Exp() < RCOUCH >
-  | < DOT > < LENGTH >
-  | < DOT > Identifier() < LPAREN > (Exp() (< VIRG > Exp())*)? < RPAREN >}
+  | LOOKAHEAD(2) < DOT > < LENGTH >
+  | LOOKAHEAD(2) < DOT > Identifier() < LPAREN > (Exp() (< VIRG > Exp())*)? < RPAREN >}
 
 /*void Exp() :
 {}
