@@ -52,7 +52,7 @@ TOKEN:
 }
 SKIP:
 {
-	< "//" (" ")* (["a" - "z","A" - "Z","0" - "9"," ","_"])* "\n" >
+	< "//" (" ")* (["a" - "z","A" - "Z","0" - "9"," ","_",";"])* "\n" >
 	| < "/*" (["a" - "z","A" - "Z","0" - "9"])* "*/" >
 	| < " " >
 	| < "\n" >
@@ -69,32 +69,172 @@ SKIP:
 
 //Grammar available on: http://www.cambridge.org/resources/052182060X/MCIIJ2e/grammar.htm
 
-void Prog() :
-{}
-{ MainClass() (ClassDeclaration())* < EOF > }
+Program Prog() :
+{
+	MainClass m;
+	ClassDeclList cl;
+}
+{ m = MainClass() cl = ClassDeclList() {return new Program(m,cl);} }
 
-void MainClass() :
-{}
-{ < CLASS > Identifier() < LBRACE > < PUBLIC > < STATIC > < VOID > < MAIN > < LPAREN > < STRING > < LCOUCH > < RCOUCH > Identifier() < RPAREN > < LBRACE > Stm() < RBRACE > < RBRACE > }
+MainClass MainClass() :
+{
+	Identifier i1,i2;
+  	Statement s;
+}
+{ < CLASS > i1 = Identifier() < LBRACE > 
+  < PUBLIC > < STATIC > < VOID > < MAIN > < LPAREN > < STRING > < LCOUCH > < RCOUCH > i2 = Identifier() < RPAREN > < LBRACE > s = Stm() < RBRACE > < RBRACE > 
+  
+{return new MainClass(i1,i2,s); } }
 
-void ClassDeclaration() :
-{}
-{ < CLASS > Identifier() (< EXTENDS > Identifier())? < LBRACE > (VarDeclaration())* (MethodDeclaration())* < RBRACE > }
+ClassDeclList ClassDeclList() :
+{
+	ClassDeclList cl = new ClassDeclList();
+	ClassDecl c;
+}
+{ (c = ClassDeclOp() { cl.addElement(c); })* 
+{return cl;}}
 
-void VarDeclaration() :
-{}
-{ Type() Identifier() < SEMICOLON > }
+ClassDecl ClassDeclOp() :
+{
+	ClassDecl c;
+}
+{ (c = ClassDeclaration() | c = ClassDeclarationExtends())
+{return c;} }
 
-void MethodDeclaration() :
-{}
-{ < PUBLIC > Type() Identifier() < LPAREN > (Type() Identifier() (< VIRG > Type() Identifier())*)? < RPAREN > < LBRACE > (LOOKAHEAD(2) VarDeclaration())* (Stm())* < RETURN > Exp() < SEMICOLON > < RBRACE > }
+ClassDeclSimple ClassDeclaration() :
+{
+	Identifier i;
+  	VarDeclList vl;  
+  	MethodDeclList ml;
+}
+{ < CLASS > i = Identifier() < LBRACE > vl = VarDeclList() ml = MethodDeclList() < RBRACE > 
 
-void Type() :
+{return new ClassDeclSimple(i,vl,ml) }}
+
+ClassDeclExtends ClassDeclarationExtends() :
+{
+	Identifier i;
+	Identifier j;
+  	VarDeclList vl;  
+  	MethodDeclList ml;
+}
+{ < CLASS > i = Identifier() <EXTENDS> j = Identifier() < LBRACE > vl = VarDeclList() ml = MethodDeclList() < RBRACE > 
+
+{return new ClassDeclExtends(i,j,vl,ml); }}
+
+VarDeclList VarDeclList() :
+{
+	VarDeclList vl = new VarDeclList();
+	VarDecl v;
+}
+{ (LOOKAHEAD(2) v = VarDeclaration() {vl.addElement(v);})*
+	
+{return vl;}}
+
+VarDecl VarDeclaration() :
+{
+	Type t;
+  	Identifier i;
+}
+{ t = Type() i = Identifier() < SEMICOLON > 
+
+{return new VarDecl(t,i);}}
+
+MethodDeclList MethodDeclList() :
+{
+	MethodDeclList ml = new MethodDeclList();
+	MethodDecl m;
+}
+{ (m = MethodDeclaration() {ml.addElement(m);})*
+	
+{return ml;}}
+
+MethodDecl MethodDeclaration() :
+{
+	Type t;
+	Identifier i;
+	FormalList fl;
+	VarDeclList vl;
+	StatementList sl;
+	Exp e;
+}
+{ < PUBLIC > t = Type() i = Identifier() < LPAREN > (fl = FormalList())? < RPAREN > < LBRACE > (LOOKAHEAD(2) vl = VarDeclaration()) (sl = StatementList()) < RETURN > e = Exp() < SEMICOLON > < RBRACE > 
+
+{return new MethodDeclaration(t,i,fl,vl,sl);}}
+
+FormalList FormalList() :
+{
+	FormalList fl = new FormalList();
+	Formal f;
+}
+{ (f = Formal() {fl.addElement(f);} (< VIRG > f = Formal() {fl.addElement(f);})*)
+
+}
+
+Formal Formal() :
+{
+	Type t;
+  	Identifier i;
+}
+{ t = Type() i = Identifier()
+
+{return new Formal(t,i);}}
+
+Type Type() :
+{
+	Type t;
+}
+{ LOOKAHEAD(2) t = IntArrayType()
+  | t = BooleanType()
+  | LOOKAHEAD(2) t = IntegerType()
+  | t = IdentifierType() 
+  
+{ return t; }}
+
+IntArrayType IntArrayType() :
+{
+	Type t;
+}
+{ < INTEGER > < LCOUCH > < RCOUCH >
+
+{return IntArrayType();}}
+
+IntegerType IntegerType() :
+{
+	Type t;
+}
+{ < INTEGER > 
+
+{return new IntegerType();}}
+  
+Type BooleanType() :
 {}
-{ LOOKAHEAD(2) < INTEGER > < LCOUCH > < RCOUCH >
-  | < BOOLEAN >
-  | LOOKAHEAD(2) < INTEGER >
-  | Identifier() }
+{ < BOOLEAN >
+
+{return new BooleanType();}}
+
+Type IdentifierType() :
+{
+	i = Identifier();
+}
+{ i = Identifier()
+
+{return new IdentifierType(i.s);}}
+
+Identifier Identifier() :
+{
+	Token t;
+}
+{ t = < IDENTIFIER >
+
+{return new Identifier(t.image);}}
+
+StatementList StatementList()
+{
+	StatementList sl = new StatementList();
+	Statement s;
+}
+{ s = Stm() {sl.addElement(s);} (s = Stm() {sl.addElement(s);})*}
   
 void Stm() :
 {}
@@ -141,26 +281,6 @@ void ExpFin() :
   | < LCOUCH > Exp() < RCOUCH >
   | LOOKAHEAD(2) < DOT > < LENGTH >
   | LOOKAHEAD(2) < DOT > Identifier() < LPAREN > (Exp() (< VIRG > Exp())*)? < RPAREN >}
-
-/*void Exp() :
-{}
-{ Exp() (< AND >|< LESS >|< PLUS >|< MINUS >|< STAR >) Exp()
-  | Exp() < LCOUCH > Exp() < RCOUCH >
-  | Exp() < DOT > < LENGTH >
-  | Exp() < DOT > Identifier() < LPAREN > (Exp() (< VIRG > Exp())*)? < RPAREN >
-  | < INTEGER_LITERAL >
-  | < TRUE >
-  | < FALSE >
-  | Identifier()
-  | < THIS >
-  | < NEW > < INTEGER > < LCOUCH > Exp() < RCOUCH >
-  | < NEW > Identifier() < LPAREN > < RPAREN >
-  | < NOT > Exp()
-  | < LPAREN > Exp() < RPAREN >}*/
-  
-void Identifier() :
-{}
-{ < IDENTIFIER > }
 
 void Goal() :
 {}

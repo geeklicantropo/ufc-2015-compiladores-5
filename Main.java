@@ -2,6 +2,9 @@ import java.io.IOException;
 
 import reader.ReadFile;
 
+import syntaxtree.*;
+import visitor.*;
+
 public class Main {
    
    public static void main(String [] args) throws IOException {
