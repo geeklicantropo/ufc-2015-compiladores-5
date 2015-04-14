@@ -234,16 +234,72 @@ StatementList StatementList()
 	StatementList sl = new StatementList();
 	Statement s;
 }
-{ s = Stm() {sl.addElement(s);} (s = Stm() {sl.addElement(s);})*}
+{ (s = Stm() {sl.addElement(s);})*
+
+{return sl;}}
   
-void Stm() :
-{}
-{ < LBRACE > (Stm())* < RBRACE >
-  | < IF > < LPAREN > Exp() < RPAREN > Stm() < ELSE > Stm()
+Statement Stm() :
+{
+	Statement s;
+}
+{
+	s = If()
+	| s = While()
+	| s = Print()
+	| s = LOOKAHEAD(2) Assign()
+	| s = ArrayAssign()
+	
+{return s;}}
+
+Statement If() :
+{
+	Exp e;
+	Statement s1,s2;	
+}
+{ < IF > < LPAREN > e = Exp() < RPAREN > s1 = Stm() < ELSE > s2 = Stm()
+	
+{return new If(e,s1,s2);}}
+
+Statement While() :
+{
+	Exp e;
+	Statement s;
+}
+{ < WHILE > < LPAREN > e = Exp() < RPAREN > s = Stm()
+
+{return new While(s,e);}}
+
+Statement Print() :
+{
+	Exp e;
+}
+{ < PRINT > < LPAREN > e = Exp() < RPAREN > < SEMICOLON >
+
+{return new Print(e);}}
+
+Statement Assign() :
+{
+	Identifier i;
+	Exp e;
+}
+{ LOOKAHEAD(2) i = Identifier() < EQ > e = Exp() < SEMICOLON >
+
+{return new Assign(i,e);}}
+
+Statement ArrayAssign() :
+{
+	Identifier i;
+	Exp e1,e2;
+}
+{ i = Identifier() < LCOUCH > e = Exp() < RCOUCH > < EQ > e = Exp() < SEMICOLON >
+
+{return new ArrayAssign(i,e1,e2);}}
+
+/*{ < IF > < LPAREN > Exp() < RPAREN > Stm() < ELSE > Stm()
   | < WHILE > < LPAREN > Exp() < RPAREN > Stm()
   | < PRINT > < LPAREN > Exp() < RPAREN > < SEMICOLON >
   | LOOKAHEAD(2) Identifier() < EQ > Exp() < SEMICOLON >
-  | Identifier() < LCOUCH > Exp() < RCOUCH > < EQ > Exp() < SEMICOLON > }
+  | Identifier() < LCOUCH > Exp() < RCOUCH > < EQ > Exp() < SEMICOLON > }*/
 
 void Exp() :
 {}
