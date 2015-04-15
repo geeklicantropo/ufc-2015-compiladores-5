@@ -295,12 +295,6 @@ Statement ArrayAssign() :
 
 {return new ArrayAssign(i,e1,e2);}}
 
-/*{ < IF > < LPAREN > Exp() < RPAREN > Stm() < ELSE > Stm()
-  | < WHILE > < LPAREN > Exp() < RPAREN > Stm()
-  | < PRINT > < LPAREN > Exp() < RPAREN > < SEMICOLON >
-  | LOOKAHEAD(2) Identifier() < EQ > Exp() < SEMICOLON >
-  | Identifier() < LCOUCH > Exp() < RCOUCH > < EQ > Exp() < SEMICOLON > }*/
-
 void Exp() :
 {}
 { ExpObj1() (LOOKAHEAD(2) ExpFin())? }
