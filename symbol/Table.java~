@@ -1,3 +1,4 @@
+//Taken from book Modern Compiler Implementation in Java.
 package symbol;
 
 public class Table 

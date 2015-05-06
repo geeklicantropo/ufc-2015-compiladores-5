@@ -3,6 +3,7 @@ options {
 }
 
 PARSER_BEGIN(MiniJavaParser)
+  import syntaxtree.*;
   public class MiniJavaParser {}
 PARSER_END(MiniJavaParser)
 
@@ -60,10 +61,6 @@ SKIP:
 }
     
  
-    
-    
-
-
 // The following is a simple grammar that will allow you
 // to test the generated lexer.
 
@@ -91,14 +88,14 @@ ClassDeclList ClassDeclList() :
 	ClassDeclList cl = new ClassDeclList();
 	ClassDecl c;
 }
-{ (c = ClassDeclOp() { cl.addElement(c); })* 
+{ (LOOKAHEAD(2) c = ClassDeclOp() { cl.addElement(c); })* 
 {return cl;}}
 
 ClassDecl ClassDeclOp() :
 {
 	ClassDecl c;
 }
-{ (c = ClassDeclaration() | c = ClassDeclarationExtends())
+{ (LOOKAHEAD(3) c = ClassDeclaration() | c = ClassDeclarationExtends())
 {return c;} }
 
 ClassDeclSimple ClassDeclaration() :
@@ -109,7 +106,7 @@ ClassDeclSimple ClassDeclaration() :
 }
 { < CLASS > i = Identifier() < LBRACE > vl = VarDeclList() ml = MethodDeclList() < RBRACE > 
 
-{return new ClassDeclSimple(i,vl,ml) }}
+{return new ClassDeclSimple(i,vl,ml); }}
 
 ClassDeclExtends ClassDeclarationExtends() :
 {
@@ -153,14 +150,14 @@ MethodDecl MethodDeclaration() :
 {
 	Type t;
 	Identifier i;
-	FormalList fl;
-	VarDeclList vl;
-	StatementList sl;
+	FormalList fl = new FormalList();
+	VarDeclList vl = new VarDeclList();
+	StatementList sl = new StatementList();
 	Exp e;
 }
-{ < PUBLIC > t = Type() i = Identifier() < LPAREN > (fl = FormalList())? < RPAREN > < LBRACE > (LOOKAHEAD(2) vl = VarDeclaration()) (sl = StatementList()) < RETURN > e = Exp() < SEMICOLON > < RBRACE > 
+{ < PUBLIC > t = Type() i = Identifier() < LPAREN > (fl = FormalList())? < RPAREN > < LBRACE > (vl = VarDeclList()) (sl = StatementList()) < RETURN > e = Exp() < SEMICOLON > < RBRACE > 
 
-{return new MethodDeclaration(t,i,fl,vl,sl);}}
+{return new MethodDecl(t,i,fl,vl,sl,e);}}
 
 FormalList FormalList() :
 {
@@ -169,7 +166,7 @@ FormalList FormalList() :
 }
 { (f = Formal() {fl.addElement(f);} (< VIRG > f = Formal() {fl.addElement(f);})*)
 
-}
+{return fl;}}
 
 Formal Formal() :
 {
@@ -184,10 +181,10 @@ Type Type() :
 {
 	Type t;
 }
-{ LOOKAHEAD(2) t = IntArrayType()
+{ (LOOKAHEAD(2) t = IntArrayType()
   | t = BooleanType()
   | LOOKAHEAD(2) t = IntegerType()
-  | t = IdentifierType() 
+  | t = IdentifierType() )
   
 { return t; }}
 
@@ -215,7 +212,7 @@ Type BooleanType() :
 
 Type IdentifierType() :
 {
-	i = Identifier();
+	Identifier i;
 }
 { i = Identifier()
 
@@ -229,7 +226,7 @@ Identifier Identifier() :
 
 {return new Identifier(t.image);}}
 
-StatementList StatementList()
+StatementList StatementList() :
 {
 	StatementList sl = new StatementList();
 	Statement s;
@@ -243,11 +240,11 @@ Statement Stm() :
 	Statement s;
 }
 {
-	s = If()
+	(s = If()
 	| s = While()
 	| s = Print()
-	| s = LOOKAHEAD(2) Assign()
-	| s = ArrayAssign()
+	| LOOKAHEAD(2) s = Assign()
+	| s = ArrayAssign())
 	
 {return s;}}
 
@@ -267,7 +264,7 @@ Statement While() :
 }
 { < WHILE > < LPAREN > e = Exp() < RPAREN > s = Stm()
 
-{return new While(s,e);}}
+{return new While(e,s);}}
 
 Statement Print() :
 {
@@ -282,7 +279,7 @@ Statement Assign() :
 	Identifier i;
 	Exp e;
 }
-{ LOOKAHEAD(2) i = Identifier() < EQ > e = Exp() < SEMICOLON >
+{i = Identifier() < EQ > e = Exp() < SEMICOLON >
 
 {return new Assign(i,e);}}
 
@@ -291,46 +288,62 @@ Statement ArrayAssign() :
 	Identifier i;
 	Exp e1,e2;
 }
-{ i = Identifier() < LCOUCH > e = Exp() < RCOUCH > < EQ > e = Exp() < SEMICOLON >
+{ i = Identifier() < LCOUCH > e1 = Exp() < RCOUCH > < EQ > e2 = Exp() < SEMICOLON >
 
 {return new ArrayAssign(i,e1,e2);}}
 
-void Exp() :
-{}
-{ ExpObj1() (LOOKAHEAD(2) ExpFin())? }
-
-void ExpObj1() :
-{}
-{ Term() (LOOKAHEAD(2) Op() ExpObj1())? }
-
-void Term() :
-{}
-{ < INTEGER_LITERAL >
-  | < TRUE >
-  | < FALSE >
-  | Identifier()
-  | < THIS >
-  | LOOKAHEAD(2) < NEW > < INTEGER > < LCOUCH > Exp() < RCOUCH >
-  | LOOKAHEAD(2) < NEW > Identifier() < LPAREN > < RPAREN >
-  | < NOT > Exp()
-  | < LPAREN > Exp() < RPAREN >}
-  
-void Op() :
-{}
+ExpList ExpList() :
+{ 
+	ExpList el = new ExpList();
+	Exp e;
+}
 {
-  < AND >
-  | < LESS >
-  | < PLUS >
-  | < MINUS >
-  | < STAR > }
+	e = Exp() {el.addElement(e);} (<VIRG> e = Exp() {el.addElement(e);})*
+{return el;}}
 
-void ExpFin() :
-{}
+Exp Exp() :
 {
-  (< AND >|< LESS >|< PLUS >|< MINUS >|< STAR >) ExpObj1()
-  | < LCOUCH > Exp() < RCOUCH >
-  | LOOKAHEAD(2) < DOT > < LENGTH >
-  | LOOKAHEAD(2) < DOT > Identifier() < LPAREN > (Exp() (< VIRG > Exp())*)? < RPAREN >}
+	Exp e;
+}
+{
+	e = ExpPrime() {return ExpPost(e);}
+}
+
+Exp ExpPrime() :
+{
+	Identifier i;
+	Exp e;
+	Token t;
+}
+{
+	t = < INTEGER_LITERAL > {return new IntegerLiteral(Integer.parseInt(t.image));}
+	| < TRUE > {return new True();}
+	| < FALSE > {return new False();}
+	| i = Identifier() {return new IdentifierExp(i.toString());}
+	| < THIS > {return new This();}
+	| LOOKAHEAD(2) < NEW > < INTEGER > < LCOUCH > e = Exp() < RCOUCH > {return new NewArray(e);}
+	| < NEW > i = Identifier() < LPAREN > < RPAREN > {return new NewObject(i);}
+	| < NOT > e = Exp() {return new Not(e);}
+	| < LPAREN > e = Exp() < RPAREN > {return ExpPost(e);}
+}
+
+Exp ExpPost(Exp e1) :
+{
+	Exp e2;
+	Identifier i;
+	ExpList el;
+}
+{
+	< AND > e2 = Exp() {return new And(e1,e2);}
+	| < LESS > e2 = Exp() {return new LessThan(e1,e2);}
+	| < PLUS > e2 = Exp() {return new Plus(e1,e2);}
+	| < MINUS >  e2 = Exp() {return new Minus(e1,e2);}
+	| < STAR > e2 = Exp() {return new Times(e1,e2);}
+	| LOOKAHEAD(2) < DOT > < LENGTH > {return new ArrayLength(e1);}
+	| < LCOUCH > e2 = Exp() < RCOUCH > {return ExpPrime(e2);}
+	| < DOT > i = Identifier() < LPAREN > el = ExpList() < RPAREN > {return new Call(e1,i,el);}
+	| {return e1;}
+}
 
 void Goal() :
 {}
@@ -342,7 +355,7 @@ void Goal() :
 void Start() :
 {}
 {
-  ( Prog() )*
+  (Prog() )*
   <EOF>
 }
 
