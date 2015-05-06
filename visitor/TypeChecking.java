@@ -154,14 +154,14 @@ public class TypeChecking
 		Type exp = n.e.accept(this);
 		if (var instanceof IdentifierType) //Class
 		{
-			ClassTable c = pt.getClass(Symbol.symbol((IdentifierType var).toString()));
+			ClassTable c = pt.getClass(Symbol.symbol(((IdentifierType) var).toString()));
 			if (c == null || !c.toString().equals(exp.toString()))
 				error.complain("Assign types not maching");
 		}
 		else
 		{
 			if (var == null || exp == null || !var.toString().equals(exp.toString()))
-				error.complain("Assign types not maching")
+				error.complain("Assign types not maching");
 		}
 	}
 

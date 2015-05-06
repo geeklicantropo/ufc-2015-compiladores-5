@@ -1,6 +1,6 @@
 package symbol;
 
-import java.util.LinkedHashMap;
+import java.util.*;
 import syntaxtree.*;
 
 public class ClassTable 
@@ -45,19 +45,19 @@ public class ClassTable
 		for (Symbol i : keys2)
 		{
 			System.out.println("\tMethod "+i.toString());
-			classTable.get(i).PrettyPrint();
+			methodTable.get(i).PrettyPrint();
 			System.out.println("\t}");
 		}
 	}
 	public MethodTable getMethod(Symbol s)
 	{
-		if (classTable.contains(s))
+		if (methodTable.containsKey(s))
 			return methodTable.get(s);
 		return null;
 	}
 	public Type getVar(Symbol s)
 	{
-		if (classTable.contains(s))
+		if (varTable.containsKey(s))
 			return varTable.get(s);
 		return null;
 	}

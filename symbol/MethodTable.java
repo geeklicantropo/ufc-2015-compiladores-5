@@ -1,6 +1,6 @@
 package symbol;
 
-import java.util.LinkedHashMap;
+import java.util.*;
 import syntaxtree.*;
 
 public class MethodTable 
@@ -14,6 +14,7 @@ public class MethodTable
 		this.t = t;
 		Name = name;
 		varTable = new LinkedHashMap<Symbol, Type>();
+		paramTable = new LinkedHashMap<Symbol, Type>();
 	}
 	public boolean addVar(Symbol s, Type t)
 	{
@@ -41,8 +42,15 @@ public class MethodTable
 	{
 		Set<Symbol> keys2 = paramTable.keySet();
 		System.out.print("(");
+		int j = keys2.size();
 		for (Symbol i : keys2)
-			System.out.print(i.toString()+", ");
+		{
+			if (j > 1)
+				System.out.print(i.toString()+", ");
+			else
+				System.out.print(i.toString());
+			j--;
+		}
 		System.out.print(") {\n");
 		Set<Symbol> keys = varTable.keySet();
 		for (Symbol i : keys)
@@ -50,13 +58,13 @@ public class MethodTable
 	}
 	public Type getVar(Symbol s)
 	{
-		if (varTable.contains(s))
+		if (varTable.containsKey(s))
 			return varTable.get(s);
 		return null;
 	}
 	public Type getParam(Symbol s)
 	{
-		if (paramTable.contains(s))
+		if (paramTable.containsKey(s))
 			return paramTable.get(s);
 		return null;
 	}

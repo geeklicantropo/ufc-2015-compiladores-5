@@ -1,6 +1,6 @@
 package symbol;
 
-import java.util.LinkedHashMap;
+import java.util.*;
 import syntaxtree.*;
 
 public class ProgramTable 
@@ -8,13 +8,13 @@ public class ProgramTable
 	private LinkedHashMap<Symbol, ClassTable> classTable;
 	public ProgramTable()
 	{
-		classTable = new LinkedHashMap<Symbol, Type>();
+		classTable = new LinkedHashMap<Symbol, ClassTable>();
 	}
 	public boolean addClass(Symbol s, ClassTable t)
 	{
 		if (!classTable.containsKey(s))
 		{
-			classTable.add(s,t);
+			classTable.put(s,t);
 			return true;
 		}
 		return false;
@@ -31,7 +31,7 @@ public class ProgramTable
 	}
 	public ClassTable getClass(Symbol s)
 	{
-		if (classTable.contains(s))
+		if (classTable.containsKey(s))
 			return classTable.get(s);
 		return null;
 	}

@@ -1,15 +1,26 @@
 package visitor;
 
+import java.util.*;
 import syntaxtree.*;
+import symbol.*;
 
-public class SymbolTable
+public class SymbolTable implements Visitor
 {
 
 	private ClassTable currentClass;
 	private MethodTable currentMethod;
 	private ProgramTable pt;
 	private ErrorMsg error;
-
+	
+	public ProgramTable getProgramTable()
+	{
+		return pt; 
+	}
+	public SymbolTable()
+	{
+		error = new ErrorMsg();
+		pt = new ProgramTable();
+	}
 	// MainClass m;
 	// ClassDeclList cl;
 	public void visit(Program n) {
@@ -26,15 +37,18 @@ public class SymbolTable
 		n.i1.accept(this);
 		ClassTable c = new ClassTable(n.i1.toString());
 		if (!pt.addClass(Symbol.symbol(n.i1.toString()),c))
-			error.complain("Class "+n.i1.toString()+" already defined.")
+			error.complain("Class "+n.i1.toString()+" already defined.");
 		else
 			currentClass = c;
 		n.i2.accept(this);
-		MethodTable m = new MethodTable(n.i2.toString(),null);
-		if (!currentClass.addMethod(Symbol.symbol(n.i2.toString()),m))
-			error.complain("Method "+n.i2.toString()+" in class "+n.i1.toString()+" already defined.")
+		MethodTable m = new MethodTable("main",null);
+		if (!currentClass.addMethod(Symbol.symbol("main"),m))
+			error.complain("Method main in class "+n.i1.toString()+" already defined.");
 		else
+		{
 			currentMethod = m;
+			currentMethod.addParam(Symbol.symbol(n.i2.toString()),null);
+		}
 		n.s.accept(this);
 	}
 
@@ -45,7 +59,7 @@ public class SymbolTable
 		n.i.accept(this);
 		ClassTable c = new ClassTable(n.i.toString());
 		if (!pt.addClass(Symbol.symbol(n.i.toString()),c))
-			error.complain("Class "+n.i.toString()+" already defined.")
+			error.complain("Class "+n.i.toString()+" already defined.");
 		else
 			currentClass = c;
 		currentMethod = null;
@@ -65,7 +79,7 @@ public class SymbolTable
 		n.i.accept(this);
 		ClassTable c = new ClassTable(n.i.toString());
 		if (!pt.addClass(Symbol.symbol(n.i.toString()),c))
-			error.complain("Class "+n.i.toString()+" already defined.")
+			error.complain("Class "+n.i.toString()+" already defined.");
 		else
 			currentClass = c;
 		n.j.accept(this);
@@ -83,14 +97,14 @@ public class SymbolTable
 	public void visit(VarDecl n) {
 		/*n.t.accept(this);
 		n.i.accept(this);*/
-		Type t = n.t.accept(this);
+		n.t.accept(this);
 		String id = n.i.toString();
 		if (currentMethod == null) 
 		{
-			if (!currentClass.addVar(Symbol.symbol(id),t))
+			if (!currentClass.addVar(Symbol.symbol(id),n.t))
 				error.complain(id + "is already defined in " + currentClass.toString()); 
 		} 
-		else if (!currentMethod.addVar(Symbol.symbol(id),t))
+		else if (!currentMethod.addVar(Symbol.symbol(id),n.t))
 			error.complain(id + "is already defined in "+ currentClass.toString() + "." + currentMethod.toString());
 	}
 
@@ -105,7 +119,7 @@ public class SymbolTable
 		n.i.accept(this);
 		MethodTable m = new MethodTable(n.i.toString(),n.t);
 		if (!currentClass.addMethod(Symbol.symbol(n.i.toString()),m))
-			error.complain("Method "+n.i.toString()+" in class "+n.i.toString()+" already defined.")
+			error.complain("Method "+n.i.toString()+" in class "+n.i.toString()+" already defined.");
 		else
 			currentMethod = m;
 		for ( int i = 0; i < n.fl.size(); i++ ) {
@@ -125,8 +139,8 @@ public class SymbolTable
 	public void visit(Formal n) {
 		n.t.accept(this);
 		n.i.accept(this);
-		if (!currentMethod.addParam(Symbol.symbol(n.i.toString())),n.t)
-			error.complain("Param "+n.i.toString()+" already defined in Method "+currentMethod.toString())
+		if (!currentMethod.addParam(Symbol.symbol(n.i.toString()),n.t))
+			error.complain("Param "+n.i.toString()+" already defined in Method "+currentMethod.toString());
 	}
 
 	public void visit(IntArrayType n) {

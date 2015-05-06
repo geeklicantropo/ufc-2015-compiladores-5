@@ -154,7 +154,7 @@ public class TypeChecking
 		Type exp = n.e.accept(this);
 		if (var instanceof IdentifierType) //Class
 		{
-			ClassTable c = pt.getClass(Symbol.symbol((IdentifierType var).toString()));
+			ClassTable c = pt.getClass(Symbol.symbol(((IdentifierType) var).toString()));
 			if (c == null || !c.toString().equals(exp.toString()))
 				error.complain("Assign types not maching");
 		}
@@ -264,28 +264,28 @@ public class TypeChecking
 	}
 
 	// String s;
-	public void visit(IdentifierExp n) {
+	public Type visit(IdentifierExp n) {
 		Type t = whatType(n.s);
 		if (t == null)
 			error.complain("Identifier not found");
 		return t;
 	}
 
-	public void visit(This n) {
+	public Type visit(This n) {
 		if (currentClass == null)
 			error.complain("Class Environment not found");
 		return new IdentifierType(currentClass.toString());
 	}
 
 	// Exp e;
-	public void visit(NewArray n) {
+	public Type visit(NewArray n) {
 		if (! (n.e.accept(this) instanceof IntegerType))
 			error.complain("Array size must be integer");
 		return new IntArrayType();
 	}
 
 	// Identifier i;
-	public void visit(NewObject n) {
+	public Type visit(NewObject n) {
 		ClassTable c = pt.getClass(n.i.toString());
 		if (c == null)
 			error.complain("Class used in new object not found");
