@@ -42,14 +42,14 @@ public class MethodTable
 	{
 		Set<Symbol> keys2 = paramTable.keySet();
 		System.out.print("(");
-		int i = keys2.size();
+		int j = keys2.size();
 		for (Symbol i : keys2)
 		{
-			if (i > 1)
+			if (j > 1)
 				System.out.print(i.toString()+", ");
 			else
 				System.out.print(i.toString());
-			i--;
+			j--;
 		}
 		System.out.print(") {\n");
 		Set<Symbol> keys = varTable.keySet();
@@ -67,5 +67,20 @@ public class MethodTable
 		if (paramTable.containsKey(s))
 			return paramTable.get(s);
 		return null;
+	}
+	public Type getParam(int size)
+	{
+		Set<Symbol> keys3 = paramTable.keySet();
+		int j = 0;
+		for (Symbol i : keys3)
+		{
+			if (j+1 == size)
+				return paramTable.get(i);
+		}
+		return null;
+	}
+	public int getNumParam()
+	{
+		return paramTable.size();
 	}
 } 

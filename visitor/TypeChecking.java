@@ -1,8 +1,10 @@
 package visitor;
 
+import java.util.*;
 import syntaxtree.*;
+import symbol.*;
 
-public class TypeChecking
+public class TypeChecking implements TypeVisitor
 {
 
 	private ClassTable currentClass;
@@ -10,35 +12,41 @@ public class TypeChecking
 	private ProgramTable pt;
 	private ErrorMsg error;
 	
-	TypeChecking (ProgramTable pt)
+	public boolean hasError()
+	{
+		return error.hasError();
+	}
+	public TypeChecking (ProgramTable pt)
 	{
 		this.pt = pt;
 	}
 	
 	// MainClass m;
 	// ClassDeclList cl;
-	public void visit(Program n) {
+	public Type visit(Program n) {
 		error = new ErrorMsg();
 		n.m.accept(this);
 		for ( int i = 0; i < n.cl.size(); i++ ) {
 			n.cl.elementAt(i).accept(this);
 		}
+		return null;
 	}
 
 	// Identifier i1,i2;
 	// Statement s;
-	public void visit(MainClass n) {
+	public Type visit(MainClass n) {
 		n.i1.accept(this);
 		currentClass = pt.getClass(Symbol.symbol(n.i1.toString()));
 		n.i2.accept(this);
 		currentMethod = currentClass.getMethod(Symbol.symbol(n.i2.toString()));
 		n.s.accept(this);
+		return null;
 	}
 
 	// Identifier i;
 	// VarDeclList vl;
 	// MethodDeclList ml;
-	public void visit(ClassDeclSimple n) {
+	public Type visit(ClassDeclSimple n) {
 		n.i.accept(this);
 		currentClass = pt.getClass(Symbol.symbol(n.i.toString()));
 		currentMethod = null;
@@ -48,13 +56,14 @@ public class TypeChecking
 		for ( int i = 0; i < n.ml.size(); i++ ) {
 			n.ml.elementAt(i).accept(this);
 		}
+		return null;
 	}
 
 	// Identifier i;
 	// Identifier j;
 	// VarDeclList vl;
 	// MethodDeclList ml;
-	public void visit(ClassDeclExtends n) {
+	public Type visit(ClassDeclExtends n) {
 		n.i.accept(this);
 		currentClass = pt.getClass(Symbol.symbol(n.i.toString()));
 		n.j.accept(this);
@@ -65,13 +74,15 @@ public class TypeChecking
 		for ( int i = 0; i < n.ml.size(); i++ ) {
 			n.ml.elementAt(i).accept(this);
 		}
+		return null;
 	}
 
 	// Type t;
 	// Identifier i;
-	public void visit(VarDecl n) {
+	public Type visit(VarDecl n) {
 		n.t.accept(this);
 		n.i.accept(this);
+		return null;
 	}
 
 	// Type t;
@@ -80,10 +91,10 @@ public class TypeChecking
 	// VarDeclList vl;
 	// StatementList sl;
 	// Exp e;
-	public void visit(MethodDecl n) {
+	public Type visit(MethodDecl n) {
 		n.t.accept(this);
 		n.i.accept(this);
-		currentMethod = currentClass.getMethod(Symbol.symbol(n.i2.toString()));
+		currentMethod = currentClass.getMethod(Symbol.symbol(n.i.toString()));
 		for ( int i = 0; i < n.fl.size(); i++ ) {
 			n.fl.elementAt(i).accept(this);
 		}
@@ -94,62 +105,72 @@ public class TypeChecking
 			n.sl.elementAt(i).accept(this);
 		}
 		Type t = n.e.accept(this);
-		if (t.toString.equals(n.t.toString()))
+		if (!t.toString().equals(n.t.toString()))
 			error.complain("Return expression does not match with the return type of method "+currentMethod.toString());
+		return null;
 	}
 
 	// Type t;
 	// Identifier i;
-	public void visit(Formal n) {
+	public Type visit(Formal n) {
 		n.t.accept(this);
 		n.i.accept(this);
+		return null;
 	}
 
-	public void visit(IntArrayType n) {
+	public Type visit(IntArrayType n) {
+		return new IntArrayType();
 	}
 
-	public void visit(BooleanType n) {
+	public Type visit(BooleanType n) {
+		return new BooleanType();
 	}
 
-	public void visit(IntegerType n) {
+	public Type visit(IntegerType n) {
+		return new IntegerType();
 	}
 
 	// String s;
-	public void visit(IdentifierType n) {
+	public Type visit(IdentifierType n) {
+		return n;
 	}
 
 	// StatementList sl;
-	public void visit(Block n) {
+	public Type visit(Block n) {
 		for ( int i = 0; i < n.sl.size(); i++ ) {
 			n.sl.elementAt(i).accept(this);
 		}
+		return null;
 	}
 
 	// Exp e;
 	// Statement s1,s2;
-	public void visit(If n) {
+	public Type visit(If n) {
 		if (! (n.e.accept(this) instanceof BooleanType))
 			error.complain("If statement condition must be boolean");
 		n.s1.accept(this);
 		n.s2.accept(this);
+		return null;
 	}
 
 	// Exp e;
 	// Statement s;
-	public void visit(While n) {
+	public Type visit(While n) {
 		if (! (n.e.accept(this) instanceof BooleanType))
 			error.complain("While statement condition must be boolean");
 		n.s.accept(this);
+		return null;
 	}
 
 	// Exp e;
-	public void visit(Print n) {
+	public Type visit(Print n) {
 		n.e.accept(this);
+		return null;
 	}
 
 	// Identifier i;
 	// Exp e;
-	public void visit(Assign n) {
+	public Type visit(Assign n) {
 		Type var = whatType(n.i.toString());
 		Type exp = n.e.accept(this);
 		if (var instanceof IdentifierType) //Class
@@ -163,11 +184,12 @@ public class TypeChecking
 			if (var == null || exp == null || !var.toString().equals(exp.toString()))
 				error.complain("Assign types not maching");
 		}
+		return null;
 	}
 
 	// Identifier i;
 	// Exp e1,e2;
-	public void visit(ArrayAssign n) {
+	public Type visit(ArrayAssign n) {
 		Type var = whatType(n.i.toString());
 		if (var == null)
 			error.complain("Array Type not declared");
@@ -177,6 +199,7 @@ public class TypeChecking
 			error.complain("Iterator of Array must be integer");
 		if (! (n.e2.accept(this) instanceof IntegerType))
 			error.complain("Right side expression of Array Assign must be integer");
+		return null;
 	}
 
 	// Exp e1,e2;
@@ -225,7 +248,7 @@ public class TypeChecking
 	}
 
 	// Exp e1,e2;
-	public void visit(ArrayLookup n) {
+	public Type visit(ArrayLookup n) {
 		if (! (n.e1.accept(this) instanceof IntegerType))
 			error.complain("Array must be integer");
 		if (! (n.e2.accept(this) instanceof IntegerType))
@@ -234,25 +257,52 @@ public class TypeChecking
 	}
 
 	// Exp e;
-	public void visit(ArrayLength n) {
+	public Type visit(ArrayLength n) {
 		if (! (n.e.accept(this) instanceof IntegerType))
 			error.complain("Array Length must be integer");
+		return null;
 	}
 
 	// Exp e;
 	// Identifier i;
 	// ExpList el;
-	public void visit(Call n) {
-		n.e.accept(this);
-		n.i.accept(this);
-		for ( int i = 0; i < n.el.size(); i++ ) {
-			n.el.elementAt(i).accept(this);
+	public Type visit(Call n) {
+		Type t = n.e.accept(this);
+		if (t == null || !(t instanceof IdentifierType))
+			error.complain("Calling some unknown class");
+		ClassTable c = pt.getClass(Symbol.symbol(((IdentifierType) t).toString()));
+		MethodTable m = c.getMethod(Symbol.symbol(n.i.toString()));
+		if (m == null)
+		{
+			error.complain("Calling some unknown method");
+			return null;
 		}
+		if (n.el.size() != m.getNumParam())
+		{
+			error.complain("Incorrect number of parameters for "+m.toString()+": Expected "+m.getNumParam()+" founded "+n.el.size());
+			return null;
+		}
+		for ( int i = 0; i < n.el.size(); i++ ) {
+			Type tparam = n.el.elementAt(i).accept(this);
+			Type ti = m.getParam(i+1);
+			if (tparam instanceof IdentifierType) //Class
+			{
+				ClassTable cp = pt.getClass(Symbol.symbol(((IdentifierType) tparam).toString()));
+				if (cp == null || !cp.toString().equals(ti.toString()))
+					error.complain("Argument "+(i+1)+" of method "+m.toString()+"must be "+ti.toString());
+			}
+			else
+			{
+				if ((tparam == null) || !tparam.toString().equals(ti.toString()))
+					error.complain("Argument "+(i+1)+" of method "+m.toString()+"must be "+ti.toString());
+			}
+		}
+		return m.getType();
 	}
 
 	// int i;
 	public Type visit(IntegerLiteral n) {
-		return new IntegerLiteral();
+		return new IntegerType();
 	}
 
 	public Type visit(True n) {
@@ -286,10 +336,10 @@ public class TypeChecking
 
 	// Identifier i;
 	public Type visit(NewObject n) {
-		ClassTable c = pt.getClass(n.i.toString());
+		ClassTable c = pt.getClass(Symbol.symbol(n.i.toString()));
 		if (c == null)
 			error.complain("Class used in new object not found");
-		return IdentifierType(c.toString());
+		return new IdentifierType(c.toString());
 	}
 
 	// Exp e;

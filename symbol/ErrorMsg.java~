@@ -6,7 +6,11 @@ public class ErrorMsg
 	private boolean anyErrors;
 	public ErrorMsg()
 	{
-		anyErrors = 0;
+		anyErrors = false;
+	}
+	public boolean hasError()
+	{
+		return anyErrors();
 	}
 	public void complain(String msg)
 	{

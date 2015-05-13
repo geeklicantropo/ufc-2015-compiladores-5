@@ -8,6 +8,10 @@ public class ErrorMsg
 	{
 		anyErrors = false;
 	}
+	public boolean hasError()
+	{
+		return anyErrors;
+	}
 	public void complain(String msg)
 	{
 		if (!anyErrors)

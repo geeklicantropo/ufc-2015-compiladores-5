@@ -12,6 +12,10 @@ public class SymbolTable implements Visitor
 	private ProgramTable pt;
 	private ErrorMsg error;
 	
+	public boolean hasError()
+	{
+		return error.hasError();
+	}
 	public ProgramTable getProgramTable()
 	{
 		return pt; 

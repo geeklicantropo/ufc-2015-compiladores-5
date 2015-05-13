@@ -68,4 +68,23 @@ public class MethodTable
 			return paramTable.get(s);
 		return null;
 	}
+	public Type getParam(int size)
+	{
+		Set<Symbol> keys3 = paramTable.keySet();
+		int j = 0;
+		for (Symbol i : keys3)
+		{
+			if (j+1 == size)
+				return paramTable.get(i);
+		}
+		return null;
+	}
+	public int getNumParam()
+	{
+		return paramTable.size();
+	}
+	public Type getType()
+	{
+		return t;
+	}
 } 
