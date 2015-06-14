@@ -96,9 +96,8 @@ public class IRTree implements IRVisitor
 
 	// Type t;
 	// Identifier i;
+	//NOTHING TO DO HERE!!!
 	public Exp visit(VarDecl n) {
-		n.t.accept(this);
-		n.i.accept(this);
 		return null;
 	}
 
@@ -147,9 +146,8 @@ public class IRTree implements IRVisitor
 
 	// Type t;
 	// Identifier i;
+	//NOTHING TO DO HERE!!!
 	public Exp visit(Formal n) {
-		n.t.accept(this);
-		n.i.accept(this);
 		return null;
 	}
 
@@ -176,6 +174,7 @@ public class IRTree implements IRVisitor
 
 	// StatementList sl;
 	public Exp visit(Block n) {
+		//!!!!!!!!!!!!!!!!!!!!!!COLOCAR CÓDIDO AQUI!!!!!!!!!!!!!!!!!!!!!!!!!
 		for ( int i = 0; i < n.sl.size(); i++ ) {
 			n.sl.elementAt(i).accept(this);
 		}
@@ -185,6 +184,7 @@ public class IRTree implements IRVisitor
 	// Exp e;
 	// Statement s1,s2;
 	public Exp visit(If n) {
+		//!!!!!!!!!!!!!!!!!!!!!!COLOCAR CÓDIDO AQUI!!!!!!!!!!!!!!!!!!!!!!!!!
 		n.e.accept(this);
 		n.s1.accept(this);
 		n.s2.accept(this);
@@ -194,6 +194,7 @@ public class IRTree implements IRVisitor
 	// Exp e;
 	// Statement s;
 	public Exp visit(While n) {
+		//!!!!!!!!!!!!!!!!!!!!!!COLOCAR CÓDIDO AQUI!!!!!!!!!!!!!!!!!!!!!!!!!
 		n.e.accept(this);
 		n.s.accept(this);
 		return null;
@@ -201,13 +202,16 @@ public class IRTree implements IRVisitor
 
 	// Exp e;
 	public Type visit(Print n) {
-		n.e.accept(this);
-		return null;
+		Exp exp = n.e.accept(this);
+		List<Exp> printarg = new LinkedList<Exp>();
+		printarg.add(exp.unEx());
+		return new Exp( frame.externalCall("printint",args) );
 	}
 
 	// Identifier i;
 	// Exp e;
 	public Exp visit(Assign n) {
+		//!!!!!!!!!!!!!!!!!!!!!!COLOCAR CÓDIDO AQUI!!!!!!!!!!!!!!!!!!!!!!!!!
 		n.i.accept();
 		n.e.accept(this);
 		return null;
@@ -216,6 +220,7 @@ public class IRTree implements IRVisitor
 	// Identifier i;
 	// Exp e1,e2;
 	public Exp visit(ArrayAssign n) {
+		//!!!!!!!!!!!!!!!!!!!!!!COLOCAR CÓDIDO AQUI!!!!!!!!!!!!!!!!!!!!!!!!!
 		n.i.accept();
 		n.e1.accept(this);
 		n.e2.accept(this);
@@ -224,6 +229,7 @@ public class IRTree implements IRVisitor
 
 	// Exp e1,e2;
 	public Exp visit(And n) {
+		//!!!!!!!!!!!!!!!!!!!!!!COLOCAR CÓDIDO AQUI!!!!!!!!!!!!!!!!!!!!!!!!!
 		n.e1.accept(this);
 		n.e2.accept(this);
 		return null;
@@ -231,6 +237,7 @@ public class IRTree implements IRVisitor
 
 	// Exp e1,e2;
 	public Exp visit(LessThan n) {
+		//!!!!!!!!!!!!!!!!!!!!!!COLOCAR CÓDIDO AQUI!!!!!!!!!!!!!!!!!!!!!!!!!
 		n.e1.accept(this);
 		n.e2.accept(this);
 		return null;
@@ -238,6 +245,7 @@ public class IRTree implements IRVisitor
 
 	// Exp e1,e2;
 	public Exp visit(Plus n) {
+		//!!!!!!!!!!!!!!!!!!!!!!COLOCAR CÓDIDO AQUI!!!!!!!!!!!!!!!!!!!!!!!!!
 		n.e1.accept(this);
 		n.e2.accept(this);
 		return null;
@@ -245,6 +253,7 @@ public class IRTree implements IRVisitor
 
 	// Exp e1,e2;
 	public Exp visit(Minus n) {
+		//!!!!!!!!!!!!!!!!!!!!!!COLOCAR CÓDIDO AQUI!!!!!!!!!!!!!!!!!!!!!!!!!
 		n.e1.accept(this);
 		n.e2.accept(this);
 		return null;
@@ -252,6 +261,7 @@ public class IRTree implements IRVisitor
 
 	// Exp e1,e2;
 	public Exp visit(Times n) {
+		//!!!!!!!!!!!!!!!!!!!!!!COLOCAR CÓDIDO AQUI!!!!!!!!!!!!!!!!!!!!!!!!!
 		n.e1.accept(this);
 		n.e2.accept(this);
 		return null;
@@ -259,6 +269,7 @@ public class IRTree implements IRVisitor
 
 	// Exp e1,e2;
 	public Exp visit(ArrayLookup n) {
+		//!!!!!!!!!!!!!!!!!!!!!!COLOCAR CÓDIDO AQUI!!!!!!!!!!!!!!!!!!!!!!!!!
 		n.e1.accept(this);
 		n.e2.accept(this);
 		return null;
@@ -266,6 +277,7 @@ public class IRTree implements IRVisitor
 
 	// Exp e;
 	public Exp visit(ArrayLength n) {
+		//!!!!!!!!!!!!!!!!!!!!!!COLOCAR CÓDIDO AQUI!!!!!!!!!!!!!!!!!!!!!!!!!
 		n.e.accept(this);
 		return null;
 	}
@@ -274,9 +286,8 @@ public class IRTree implements IRVisitor
 	// Identifier i;
 	// ExpList el;
 	public Exp visit(Call n) {
+		//!!!!!!!!!!!!!!!!!!!!!!COLOCAR CÓDIDO AQUI!!!!!!!!!!!!!!!!!!!!!!!!!
 		n.e.accept(this);
-		ClassTable c = pt.getClass(Symbol.symbol(((IdentifierType) t).toString()));
-		MethodTable m = c.getMethod(Symbol.symbol(n.i.toString()));
 		for ( int i = 0; i < n.el.size(); i++ ) {
 			Type tparam = n.el.elementAt(i).accept(this);
 		}
@@ -285,50 +296,52 @@ public class IRTree implements IRVisitor
 
 	// int i;
 	public Exp visit(IntegerLiteral n) {
-		return null;
+		return new Ex(new CONST(n.i));
 	}
 
 	public Exp visit(True n) {
-		return null;
+		return new Ex(new CONST(1));
 	}
 
 	public Exp visit(False n) {
+		//!!!!!!!!!!!!!!!!!!!!!!COLOCAR CÓDIDO AQUI!!!!!!!!!!!!!!!!!!!!!!!!!
 		return null;
 	}
 
 	// String s;
 	public Exp visit(IdentifierExp n) {
+		//!!!!!!!!!!!!!!!!!!!!!!COLOCAR CÓDIDO AQUI!!!!!!!!!!!!!!!!!!!!!!!!!
 		return null;
 	}
 
 	public Exp visit(This n) {
-		if (currentClass == null)
-			error.complain("Class Environment not found");
-		return new IdentifierType(currentClass.toString());
+		//!!!!!!!!!!!!!!!!!!!!!!COLOCAR CÓDIDO AQUI!!!!!!!!!!!!!!!!!!!!!!!!!
+		return null;
 	}
 
 	// Exp e;
 	public Exp visit(NewArray n) {
+		//!!!!!!!!!!!!!!!!!!!!!!COLOCAR CÓDIDO AQUI!!!!!!!!!!!!!!!!!!!!!!!!!
 		n.e.accept(this);
 		return null;
 	}
 
 	// Identifier i;
 	public Exp visit(NewObject n) {
-		ClassTable c = pt.getClass(Symbol.symbol(n.i.toString()));
-		if (c == null)
-			error.complain("Class used in new object not found");
-		return new IdentifierType(c.toString());
+		//!!!!!!!!!!!!!!!!!!!!!!COLOCAR CÓDIDO AQUI!!!!!!!!!!!!!!!!!!!!!!!!!
+		return null;
 	}
 
 	// Exp e;
 	public Exp visit(Not n) {
+		//!!!!!!!!!!!!!!!!!!!!!!COLOCAR CÓDIDO AQUI!!!!!!!!!!!!!!!!!!!!!!!!!
 		n.e.accept(this);
 		return null;
 	}
 
 	// String s;
 	public Exp visit(Identifier n) {
+		//!!!!!!!!!!!!!!!!!!!!!!COLOCAR CÓDIDO AQUI!!!!!!!!!!!!!!!!!!!!!!!!!
 		return null;
 	}
 	

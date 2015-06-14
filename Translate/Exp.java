@@ -1,8 +1,12 @@
 package Translate;
 
 public abstract class Exp {
-    tree.Exp exp;
-    tree.Exp unEx()
+    public Exp(Exp e)
+    {
+    	exp = e;
+    }
+    private tree.Exp exp;
+    public tree.Exp unEx()
     {
     	return exp;
     }
